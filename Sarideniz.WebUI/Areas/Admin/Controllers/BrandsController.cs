@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Sarideniz.Core.Entities;
 using Sarideniz.Data;
+using Sarideniz.WebUI.Utils;
 
 namespace Sarideniz.WebUI.Areas.Admin.Controllers
 {
@@ -55,10 +56,11 @@ namespace Sarideniz.WebUI.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create( Brand brand)
+        public async Task<IActionResult> Create( Brand brand, IFormFile? Logo)
         {
             if (ModelState.IsValid)
             {
+                brand.Logo = await FileHelper.FileLoaderAsync(Logo);
                 _context.Add(brand);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -87,7 +89,7 @@ namespace Sarideniz.WebUI.Areas.Admin.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Brand brand)
+        public async Task<IActionResult> Edit(int id, Brand brand, IFormFile? Logo, bool cbResmiSil = false)
         {
             if (id != brand.Id)
             {
@@ -98,6 +100,10 @@ namespace Sarideniz.WebUI.Areas.Admin.Controllers
             {
                 try
                 {
+                    if (cbResmiSil)
+                        brand.Logo = string.Empty;
+                    if (Logo is not null)
+                    brand.Logo = await FileHelper.FileLoaderAsync(Logo);
                     _context.Update(brand);
                     await _context.SaveChangesAsync();
                 }
@@ -143,6 +149,10 @@ namespace Sarideniz.WebUI.Areas.Admin.Controllers
             var brand = await _context.Brands.FindAsync(id);
             if (brand != null)
             {
+                if (!string.IsNullOrEmpty(brand.Logo))
+                {
+                    FileHelper.FileRemover(brand.Logo);
+                }
                 _context.Brands.Remove(brand);
             }
 
