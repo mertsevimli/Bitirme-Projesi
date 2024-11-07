@@ -1,21 +1,23 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Sarideniz.Data;
 using Sarideniz.WebUI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sarideniz.WebUI.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly DatabaseContext _context;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(DatabaseContext context)
     {
-        _logger = logger;
+        _context = context;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        return View(await _context.Sliders.ToListAsync());
     }
 
     public IActionResult Privacy()

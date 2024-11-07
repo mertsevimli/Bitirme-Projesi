@@ -1,5 +1,6 @@
-using System.Data.Entity;
+//using System.Data.Entity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sarideniz.Data;
 
 namespace Sarideniz.WebUI.ViewComponents;
