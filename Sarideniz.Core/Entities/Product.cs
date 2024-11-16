@@ -14,6 +14,7 @@ public class Product : IEntity
     public string? Image { get; set; }
     [Display(Name = "Fiyat")]
     public decimal Price { get; set; }
+    
     [Display(Name = "Ürün Kodu")]
     public string? ProductCode{ get; set; }
     [Display(Name = "Stock")]
