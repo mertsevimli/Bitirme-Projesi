@@ -17,9 +17,9 @@ public class ProductsController : Controller
     }
 
     // GET
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string arama = "")
     {
-        var databaseContext = _context.Products.Where(p => p.IsActive).Include(p => p.Brand).Include(p => p.Category);
+        var databaseContext = _context.Products.Where(p => p.IsActive && p.Name.Contains(arama)|| p.Description.Contains(arama)).Include(p => p.Brand).Include(p => p.Category);
         return View(await  databaseContext.ToListAsync());
     }    public async Task<IActionResult> Details(int? id)
     {

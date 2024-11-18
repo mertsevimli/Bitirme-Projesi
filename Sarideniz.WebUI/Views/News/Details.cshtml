@@ -1,0 +1,20 @@
+@model News
+
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "_Layout";
+}
+
+
+<h1>@Model.Name</h1>
+<div class="row">
+    <div class="col col-md-6">
+        <img src="/Img/@Model.Image" alt="@Model.Name" class="img-fluid"></img>
+    </div>
+    <div class="col-md-6">
+        @Model.Description
+        <p>
+           @Model.CreateDate.ToShortDateString() 
+        </p>
+    </div>
+</div>

@@ -156,7 +156,7 @@ namespace Sarideniz.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreateDate = new DateTime(2024, 10, 29, 17, 16, 42, 581, DateTimeKind.Local).AddTicks(490),
+                            CreateDate = new DateTime(2024, 11, 18, 16, 10, 55, 82, DateTimeKind.Local).AddTicks(5200),
                             IsActive = true,
                             IsTopMenu = true,
                             Name = "Küpe",
@@ -166,7 +166,7 @@ namespace Sarideniz.Data.Migrations
                         new
                         {
                             Id = 2,
-                            CreateDate = new DateTime(2024, 10, 29, 17, 16, 42, 581, DateTimeKind.Local).AddTicks(490),
+                            CreateDate = new DateTime(2024, 11, 18, 16, 10, 55, 82, DateTimeKind.Local).AddTicks(5210),
                             IsActive = true,
                             IsTopMenu = true,
                             Name = "Kolye",
@@ -227,8 +227,7 @@ namespace Sarideniz.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(750)
-                        .HasColumnType("nvarchar(750)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Image")
                         .HasMaxLength(100)
