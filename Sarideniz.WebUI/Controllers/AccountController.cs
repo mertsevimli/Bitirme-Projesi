@@ -1,6 +1,13 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sarideniz.Core.Entities;
 using Sarideniz.Data;
+using Sarideniz.WebUI.Models;
+
 
 namespace Sarideniz.WebUI.Controllers;
 
@@ -12,6 +19,7 @@ public class AccountController : Controller
     {
         _context = context;
     }
+    [Authorize]
     // GET
     public IActionResult Index()
     {
@@ -22,9 +30,39 @@ public class AccountController : Controller
         return View();
     }
     [HttpPost]
-    public IActionResult SignIn(AppUser appUser)
+    public async Task<IActionResult> SignIn(LoginViewModel loginViewModel)
     {
-        return View();
+        if (ModelState.IsValid)
+        {
+            
+            var account = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password && x.IsActive);
+            if (account == null)
+            {
+                ModelState.AddModelError("","Hata Oluştu!");
+            }
+            else
+            {
+                var claims = new List<Claim>()
+                {
+                    new (ClaimTypes.Name, account.Name),
+                    new (ClaimTypes.Role, account.IsAdmin ? "Admin" : "Customer"),
+                    new (ClaimTypes.Email, account.Email),
+                    new ("UserId", account.Id.ToString()),
+                    new ("UserGuid", account.UserGuid.ToString()),
+                };
+                var userIdentity = new ClaimsIdentity(claims, "Login");
+                ClaimsPrincipal userPrincipal = new ClaimsPrincipal(userIdentity);
+                await HttpContext.SignInAsync(userPrincipal);
+                return RedirectToAction("Index", "Home");
+            }
+           try
+                       { }
+            catch (Exception hata)
+            {
+               ModelState.AddModelError("","Hata Oluştu!");
+            }
+        }
+        return View(loginViewModel);
     }
     public IActionResult SignUp()
     {
