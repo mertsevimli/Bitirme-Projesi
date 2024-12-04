@@ -34,7 +34,8 @@ public class AccountController : Controller
     {
         if (ModelState.IsValid)
         {
-            
+            try
+            {
             var account = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password && x.IsActive);
             if (account == null)
             {
@@ -53,10 +54,9 @@ public class AccountController : Controller
                 var userIdentity = new ClaimsIdentity(claims, "Login");
                 ClaimsPrincipal userPrincipal = new ClaimsPrincipal(userIdentity);
                 await HttpContext.SignInAsync(userPrincipal);
-                return RedirectToAction("Index", "Home");
+                return Redirect(string.IsNullOrEmpty(loginViewModel.ReturnUrl) ? "/" : loginViewModel.ReturnUrl);
             }
-           try
-                       { }
+            }
             catch (Exception hata)
             {
                ModelState.AddModelError("","Hata Oluştu!");
@@ -80,5 +80,9 @@ public class AccountController : Controller
             return RedirectToAction(nameof(Index));
         }
         return View(appUser);
+    }   public async Task<IActionResult> SignOut()
+    {
+        await HttpContext.SignOutAsync();
+        return RedirectToAction("SignIn");
     }
 }
