@@ -7,7 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+    {
+        options.Cookie.Name = "Sarideniz.Cookie";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+        options.IdleTimeout = TimeSpan.FromDays(365);
+        options.IOTimeout = TimeSpan.FromDays(365);
+    }
+    );
 
 builder.Services.AddDbContext<DatabaseContext>();
 
