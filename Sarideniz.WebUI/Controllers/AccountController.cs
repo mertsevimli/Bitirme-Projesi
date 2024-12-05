@@ -23,7 +23,12 @@ public class AccountController : Controller
     // GET
     public IActionResult Index()
     {
-        return View();
+        var model = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        if (model is null)
+        {
+            return NotFound();
+        }
+        return View(model);
     }
     public IActionResult SignIn()
     {
