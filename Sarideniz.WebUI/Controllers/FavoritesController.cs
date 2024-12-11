@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Sarideniz.Core.Entities;
 using Sarideniz.Data;
 using Sarideniz.WebUI.ExtensionMethods;
@@ -15,7 +14,6 @@ public class FavoritesController : Controller
         _context = context;
     }
 
-    // GET
     public IActionResult Index()
     {
         var favoriler = GetFavorites();
@@ -31,7 +29,14 @@ public class FavoritesController : Controller
     {
         var favoriler = GetFavorites();
         var product = _context.Products.Find(ProductId);
-        if (product != null && !favoriler.Any(p => p.Id == product.Id))
+
+        if (product == null)
+        {
+            TempData["Error"] = "Ürün bulunamadı.";
+            return RedirectToAction("Index");
+        }
+
+        if (!favoriler.Any(p => p.Id == product.Id))
         {
             favoriler.Add(product);
             HttpContext.Session.SetJson("GetFavorites", favoriler);
@@ -43,10 +48,10 @@ public class FavoritesController : Controller
     public IActionResult Remove(int ProductId)
     {
         var favoriler = GetFavorites();
-        var product = _context.Products.Find(ProductId);
-        if (product != null && favoriler.Any(p => p.Id == product.Id))
+
+        if (favoriler.Any(p => p.Id == ProductId))
         {
-            favoriler.RemoveAll(i=>i.Id == product.Id);
+            favoriler.RemoveAll(i => i.Id == ProductId);
             HttpContext.Session.SetJson("GetFavorites", favoriler);
         }
 

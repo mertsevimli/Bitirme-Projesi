@@ -8,14 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSession(options =>
-    {
-        options.Cookie.Name = "Sarideniz.Cookie";
-        options.Cookie.HttpOnly = true;
-        options.Cookie.IsEssential = true;
-        options.IdleTimeout = TimeSpan.FromDays(365);
-        options.IOTimeout = TimeSpan.FromDays(365);
-    }
-    );
+{
+    options.Cookie.Name = "Sarideniz.Cookie";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromDays(365);
+});
 
 builder.Services.AddDbContext<DatabaseContext>();
 
@@ -30,7 +28,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(x =>
 {
     x.AddPolicy("AdminPolicy", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"));
-    x.AddPolicy("UserPolicy", policy => policy.RequireClaim(ClaimTypes.Role, "Admin","User","Customer"));
+    x.AddPolicy("UserPolicy", policy => policy.RequireClaim(ClaimTypes.Role, "Admin", "User", "Customer"));
 });
 
 var app = builder.Build();
@@ -39,7 +37,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -47,12 +44,13 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseSession();// session kullanımı
+app.UseSession(); // Session middleware
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllerRoute(
-    name : "Admin",
-    pattern : "{area:exists}/{controller=Main}/{action=Index}/{id?}"
+    name: "Admin",
+    pattern: "{area:exists}/{controller=Main}/{action=Index}/{id?}"
 );
 
 app.MapControllerRoute(

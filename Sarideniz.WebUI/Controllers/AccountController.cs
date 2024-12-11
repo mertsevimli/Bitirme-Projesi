@@ -23,19 +23,69 @@ public class AccountController : Controller
     // GET
     public IActionResult Index()
     {
-        var model = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
-        if (model is null)
+        AppUser user = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        if (user is null)
         {
             return NotFound();
+        }var model = new UserEditViewModel()
+        {
+            Email = user.Email,
+            Id = user.Id,
+            Name = user.Name,
+            Surname = user.Surname,
+            Password = user.Password,
+            Phone = user.Phone,
+        };
+        return View(model);
+    }
+    [HttpPost, Authorize]
+    public IActionResult Index(UserEditViewModel model)
+    {
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                
+                AppUser user = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+                if (user is not null)
+                {
+                  user.Name = model.Name;
+                  user.Surname = model.Surname;
+                  user.Email = model.Email;
+                  user.Phone = model.Phone;
+                  user.Password = model.Password;
+                  user.Phone = model.Phone;
+                  _context.AppUsers.Update(user);
+                 var sonuc = _context.SaveChanges();
+                  
+                  if (sonuc > 0)
+                  {
+                      TempData["Message"] = @"<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+  <strong>Hesap Bilgileriniz Güncellenmiştir.!</strong>
+  <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+</div>";
+                      //await MailHelper.SendEmailAsync(contact);
+                      return RedirectToAction("Index");
+                  }
+                }
+
+                
+            }
+            catch (Exception e)
+            {
+                
+                ModelState.AddModelError("", "Hata Oluştu!");
+            }  
         }
         return View(model);
     }
-    public IActionResult SignIn()
+ 
+  public IActionResult SignIn()
     {
         return View();
     }
     [HttpPost]
-    public async Task<IActionResult> SignIn(LoginViewModel loginViewModel)
+    public async Task<IActionResult> SignInAsync(LoginViewModel loginViewModel)
     {
         if (ModelState.IsValid)
         {
