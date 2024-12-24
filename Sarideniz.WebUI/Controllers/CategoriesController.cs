@@ -1,16 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Sarideniz.Data;
+using Sarideniz.Core.Entities;
+using Sarideniz.Service.Abstract;
 
 namespace Sarideniz.WebUI.Controllers;
 
 public class CategoriesController : Controller
 {
-    private readonly DatabaseContext _context;
+    private readonly IService<Category> _service;
 
-    public CategoriesController(DatabaseContext context)
+    public CategoriesController(IService<Category> service)
     {
-        _context = context;
+        _service = service;
     }
     // GET
     public async Task<IActionResult> Index(int? id)
@@ -20,7 +21,7 @@ public class CategoriesController : Controller
             return NotFound();
         }
 
-        var category = await _context.Categories.Include(p=>p.Products)
+        var category = await _service.GetQueryable().Include(p=>p.Products)
             .FirstOrDefaultAsync(m => m.Id == id);
         if (category == null)
         {

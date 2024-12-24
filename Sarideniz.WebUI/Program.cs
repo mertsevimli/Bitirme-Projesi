@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Sarideniz.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Sarideniz.Service.Abstract;
+using Sarideniz.Service.Concrete;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddDbContext<DatabaseContext>();
+builder.Services.AddScoped(typeof(IService<>), typeof(Service<>));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
 {

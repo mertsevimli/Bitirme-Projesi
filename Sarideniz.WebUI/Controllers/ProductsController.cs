@@ -3,24 +3,28 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Sarideniz.Core.Entities;
 using Sarideniz.Data;
+using Sarideniz.Service.Abstract;
 using Sarideniz.WebUI.Models;
 using Sarideniz.WebUI.Utils;
 namespace Sarideniz.WebUI.Controllers;
 
 public class ProductsController : Controller
 {
-    private readonly DatabaseContext _context;
 
-    public ProductsController(DatabaseContext context)
+    private readonly IService<Product> _serviceProduct;
+
+    public ProductsController(IService<Product> serviceProduct)
     {
-        _context = context;
+        _serviceProduct = serviceProduct;
     }
+
 
     // GET
     public async Task<IActionResult> Index(string arama = "")
     {
-        var databaseContext = _context.Products.Where(p => p.IsActive && p.Name.Contains(arama)|| p.Description.Contains(arama)).Include(p => p.Brand).Include(p => p.Category);
-        return View(await  databaseContext.ToListAsync());
+        var databaseContext =
+            _serviceProduct.GetAllAsync(p => p.IsActive && p.Name.Contains(arama) || p.Description.Contains(arama));
+        return View(await  databaseContext);
     }    public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
@@ -28,7 +32,7 @@ public class ProductsController : Controller
             return NotFound();
         }
 
-        var product = await _context.Products
+        var product = await _serviceProduct.GetQueryable()
             .Include(p => p.Brand)
             .Include(p => p.Category)
             .FirstOrDefaultAsync(m => m.Id == id);
@@ -40,7 +44,7 @@ public class ProductsController : Controller
         var model = new ProductDetailsViewModel()
         {
             Product = product,
-            RelatedProducts = _context.Products
+            RelatedProducts = _serviceProduct.GetQueryable()
                 .Where(p => p.IsActive && p.CategoryId == product.CategoryId && p.Id != product.Id)
                 .ToList() // Verileri listeye dönüştürmek için
         };

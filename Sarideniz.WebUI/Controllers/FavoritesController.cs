@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using Sarideniz.Core.Entities;
-using Sarideniz.Data;
+using Sarideniz.Service.Abstract;
 using Sarideniz.WebUI.ExtensionMethods;
 
 namespace Sarideniz.WebUI.Controllers;
 
 public class FavoritesController : Controller
 {
-    private readonly DatabaseContext _context;
+    private readonly IService<Product> _service;
 
-    public FavoritesController(DatabaseContext context)
+    public FavoritesController(IService<Product> service)
     {
-        _context = context;
+        _service = service;
     }
 
     public IActionResult Index()
@@ -28,7 +28,7 @@ public class FavoritesController : Controller
     public IActionResult Add(int ProductId)
     {
         var favoriler = GetFavorites();
-        var product = _context.Products.Find(ProductId);
+        var product = _service.Find(ProductId);
 
         if (product == null)
         {
@@ -48,6 +48,7 @@ public class FavoritesController : Controller
     public IActionResult Remove(int ProductId)
     {
         var favoriler = GetFavorites();
+        var product = _service.Find(ProductId);
 
         if (favoriler.Any(p => p.Id == ProductId))
         {

@@ -1,11 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Sarideniz.Core.Entities;
-using Sarideniz.Data;
+using Sarideniz.Service.Abstract;
 using Sarideniz.WebUI.Models;
 
 
@@ -13,17 +11,24 @@ namespace Sarideniz.WebUI.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly DatabaseContext _context;
+    // private readonly DatabaseContext _context;
+    //
+    // public AccountController(DatabaseContext context)
+    // {
+    //     _context = context;
+    // }
+    private readonly IService<AppUser> _service;
 
-    public AccountController(DatabaseContext context)
+    public AccountController(IService<AppUser> service)
     {
-        _context = context;
+        _service = service;
     }
+
     [Authorize]
     // GET
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        AppUser user = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        AppUser user = await _service.GetAsync(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (user is null)
         {
             return NotFound();
@@ -39,14 +44,14 @@ public class AccountController : Controller
         return View(model);
     }
     [HttpPost, Authorize]
-    public IActionResult Index(UserEditViewModel model)
+    public async Task<IActionResult> Index(UserEditViewModel model)
     {
         if (ModelState.IsValid)
         {
             try
             {
                 
-                AppUser user = _context.AppUsers.FirstOrDefault(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+                AppUser user = await _service.GetAsync(x=>x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
                 if (user is not null)
                 {
                   user.Name = model.Name;
@@ -55,8 +60,8 @@ public class AccountController : Controller
                   user.Phone = model.Phone;
                   user.Password = model.Password;
                   user.Phone = model.Phone;
-                  _context.AppUsers.Update(user);
-                 var sonuc = _context.SaveChanges();
+                  _service.Update(user);
+                 var sonuc = _service.SaveChanges();
                   
                   if (sonuc > 0)
                   {
@@ -91,7 +96,7 @@ public class AccountController : Controller
         {
             try
             {
-            var account = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password && x.IsActive);
+            var account = await _service.GetAsync((x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password && x.IsActive));
             if (account == null)
             {
                 ModelState.AddModelError("","Hata Oluştu!");
@@ -130,8 +135,8 @@ public class AccountController : Controller
         appUser.IsActive = true;
         if (ModelState.IsValid)
         {
-            await _context.AddAsync(appUser);
-            await _context.SaveChangesAsync();
+            await _service.AddAsync(appUser);
+            await _service.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
         return View(appUser);

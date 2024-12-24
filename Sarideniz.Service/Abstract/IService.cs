@@ -11,6 +11,7 @@ public interface IService<T> where T : class , IEntity, new()
     T Get(Expression<Func<T, bool>> expression);
     T Find(int id);
     void Add(T entity);
+    void Update(T entity);
     void Delete(T entity);
     int SaveChanges();
     
