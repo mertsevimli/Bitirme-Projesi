@@ -79,6 +79,20 @@
         </div>
         <input type="hidden" asp-for="ReturnUrl" value="@Context.Request.Query["ReturnUrl"]"/>
         <button class="btn btn-primary w-100 py-2" type="submit">Giriş Yap</button>
-        <p class="mt-5 mb-3 text-body-secondary text-center">Made in <i class="bi bi-heart-fill" style="color: red;"></i></p>
+      
     </form>
+    <div class="row">
+        <div class="col-12 my-3">
+            <a href="/Account/SignUp" class="btn btn-secondary w-100 py-2"><i class="fa-regular fa-circle-user"></i> Üye Ol</a>
+        </div>
+        <div class="col-12">
+            <a href="/Account/PasswordRenew" class="btn btn-secondary w-100 py-2"><i class="fa-solid fa-fish"></i> Şifremi Unuttum</a>
+        </div>
+        
+    </div>
+    <p class="mt-5 mb-3 text-body-secondary text-center">Made in <i class="bi bi-heart-fill" style="color: red;"></i></p>
 </main>
+<hr>
+<p class="alert alert-light alert-dismissible fade show">
+    Sipariş Oluşturmak, Kampanyalardan yararlanmak, Siparişinizi takip etmek için lütfen sisteme giriş yapınız.
+</p>

@@ -1,13 +1,13 @@
-﻿@model CartViewModel
+﻿@model CheckoutViewModel
 @{
-    ViewData["Title"] = "Sepetim";
+    ViewData["Title"] = "Satın Al";
 }
 
 <section class="container my-5 ms-5">
     <div class="text-center">
-        <h1 class="display-4"><i class="bi bi-cart4" style="color: black;"></i> Sepetim</h1>
+        <h1 class="display-4"><i class="bi bi-cart4" style="color: black;"></i> Satın Al</h1>
     </div>
-    <div class="row"> @if (Model.CartLines.Any())
+    <div class="row"> @if (Model.CartProducts.Any())
         {
             <div class="col-md-8">
                 <div class="table-responsive">
@@ -21,10 +21,12 @@
                             <th>Toplam</th>
                         </tr>
                         <tbody>
-                        @foreach (var item in Model.CartLines)
+                        @foreach (var item in Model.CartProducts)
                         {
                             <tr>
-                                <td><img src="Img/Products/@item.Product.Image" height="150"></img></td>
+                                <td>
+                                    <img src="/Img/Products/@item.Product.Image" height="150" alt=""/>
+                                </td>
                                 <td>
                                     <a class="nav-link text-dark" href="/Products/Details/@item.Product.Id">
                                         @item.Product.Name
@@ -37,16 +39,7 @@
                                 <td>
                                     @((item.Quantity * item.Product.Price).ToString("c"))
                                 </td>
-                                <td>
-
-                                    <form asp-action="Remove" asp-controller="Cart" method="post">
-                                        <input type="hidden" name="ProductId" value="@item.Product.Id">
-                                        <button class="btn btn-sm btn-danger" type="submit"
-                                                style="background: red; width: 40px; border: none; padding: 0px;">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </form>
-                                </td>
+                               
                             </tr>
                         }
                         </tbody>
@@ -56,38 +49,26 @@
             </div>
             <div class="col-md-4 mt-3">
                 <div>
-                    <h4>Sepet Toplamı</h4>
+                    <h4>Sipariş Özeti</h4>
                 </div>
                 <table class="table">
                     <tr>
-                        <td>Ara Toplam</td>
+                        <td>Ürün Toplamı</td>
                         <td>
                             @Model.TotalPrice.ToString("c")
                         </td>
                     </tr>
                     <tr>
                         <td>Kargo Ücreti</td>
-                        <td>@(Model.TotalPrice > 999 ? "Ücretsiz" : Model.CartLines.Any() ? "99₺" : "0₺")</td>
+                        <td>@(Model.TotalPrice > 999 ? "Ücretsiz" : Model.CartProducts.Any() ? "99₺" : "0₺")</td>
                     </tr>
                     <tr>
                         <th>Sipariş Toplamı</th>
                         <td>
-                            @(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartLines.Any() ? Model.TotalPrice + 99 : Model.TotalPrice.ToString("c")))
+                            @(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartProducts.Any() ? Model.TotalPrice + 99 : Model.TotalPrice.ToString("c")))
                         </td>
                     </tr>
                 </table>
-                
-                <div class="text-center">
-
-                    <a href="/" class="btn btn-danger">
-                        <i class="bi bi-cart me-1"></i>Alışverişe Devam Et
-                    </a>
-                    <a href="/Cart/Checkout" class="btn btn-warning">
-                        <i class="bi bi-credit-card me-1"></i>Satın Al
-                    </a>
-                    
-                </div>
-                
             </div>
         }
         else

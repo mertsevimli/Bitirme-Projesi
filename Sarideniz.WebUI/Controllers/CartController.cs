@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sarideniz.Core.Entities;
 using Sarideniz.Service.Abstract;
@@ -58,6 +59,18 @@ public class CartController : Controller
         }
 
         return RedirectToAction("Index");
+    }
+    [Authorize]
+    public IActionResult Checkout()
+    {
+        var cart = GetCart();
+        var model = new CheckoutViewModel()
+        {
+            CartProducts = cart.CartLines,
+            TotalPrice = cart.TotalPrice()
+        };
+            
+        return View(model);
     }
     public IActionResult Remove(int ProductId)
     {
