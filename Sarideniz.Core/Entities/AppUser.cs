@@ -27,5 +27,7 @@ public class AppUser : IEntity
     public DateTime UpdateDate { get; set; } 
     [ScaffoldColumn(false)]
     public Guid? UserGuid { get; set; } = Guid.NewGuid();
+
+    public List<Address>? Addresses { get; set; }
     
 }
