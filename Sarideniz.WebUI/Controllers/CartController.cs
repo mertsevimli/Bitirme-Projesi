@@ -161,4 +161,10 @@ public class CartController : Controller
 
         return RedirectToAction("Index");
     }
+    public IActionResult Thanks()
+    {
+       
+            
+        return View();
+    }
 }
