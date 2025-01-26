@@ -105,7 +105,10 @@ public class CartController : Controller
         }
 
         var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == Addresses); 
-        var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == BillingAddress);  
+        var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == BillingAddress); 
+        // Ödeme Çekme
+        
+        
         return View(model);
     }
     public IActionResult Remove(int ProductId)
