@@ -72,7 +72,7 @@
                 </form>
                 <div class="col-md-1 mt-3 me-0 text-start">
                     <a class=" nav-link text-dark" href="/Favorites">
-                        <i class="bi bi-star-fill" style="color: gold;"></i> Favorilerim
+                        <i class="bi bi-star-fill" style="color: gold;"></i> Favorilerim 
                     </a>
 
                 </div>
@@ -84,7 +84,9 @@
                         {
                             <button class="dropdown-toggle nav-link text-dark text align-content-end" type="button"
                                     data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-cart4" style="color: black;"></i> Sepetim
+                                <i class="bi bi-cart4" style="color: black;"></i> Sepetim <span class="badge bg-danger text-white ms-1 rounded-pill">
+                                    @cart.CartLines.Count
+                                </span>
                             </button>
 
                             <ul class="dropdown-menu shadow-lg rounded-3 border-0"
@@ -127,7 +129,7 @@
                         else
                         {
                             <a class="nav-link text-dark " href="/Cart">
-                                <i class="bi bi-cart4" style="color: black;"></i> Sepetim
+                                <i class="bi bi-cart4" style="color: black;"></i> Sepetim 
                             </a>
                         }
                     }
