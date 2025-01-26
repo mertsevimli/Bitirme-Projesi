@@ -11,10 +11,14 @@ namespace Sarideniz.WebUI.Controllers;
 public class CartController : Controller
 {
     private readonly IService<Product> _serviceProduct;
+    private readonly IService<Address> _serviceAddress;
+    private readonly IService<AppUser> _serviceAppUser;
 
-    public CartController(IService<Product> serviceProduct)
+    public CartController (IService<Product> serviceProduct, IService<Address> serviceAddress, IService<AppUser> serviceAppUser)
     {
         _serviceProduct = serviceProduct;
+        _serviceAddress = serviceAddress;
+        _serviceAppUser = serviceAppUser;
     }
 
     // GET
@@ -61,13 +65,20 @@ public class CartController : Controller
         return RedirectToAction("Index");
     }
     [Authorize]
-    public IActionResult Checkout()
+    public async Task<IActionResult> Checkout()
     {
         var cart = GetCart();
+        var appUser = await _serviceAppUser.GetAsync(x=>x.UserGuid.ToString()== HttpContext.User.FindFirst("UserGuid").Value);
+        if (appUser == null)
+        {
+            return RedirectToAction("SignIn", "Account");
+        }
+        var addresses = await _serviceAddress.GetAllAsync(a=>a.AppUserId == appUser.Id && a.IsActive);
         var model = new CheckoutViewModel()
         {
             CartProducts = cart.CartLines,
-            TotalPrice = cart.TotalPrice()
+            TotalPrice = cart.TotalPrice(),
+            Addresses = addresses
         };
             
         return View(model);
