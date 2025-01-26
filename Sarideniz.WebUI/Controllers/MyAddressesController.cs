@@ -120,10 +120,56 @@ public class MyAddressesController : Controller
         {
             _serviceAddress.Update(model);
             await _serviceAddress.SaveChangesAsync();
+            return RedirectToAction("Index");
         }
         catch (Exception e)
         {
             ModelState.AddModelError("", "Hata oluştu!");
+        }
+        return View(model);
+   
+    }
+    public async Task<IActionResult> Delete(string id)
+    {
+        var appUser =
+            await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        if (appUser == null)
+        {
+            return NotFound("Kullanıcı Datası Bulunamadı! Oturumunuzu Kapatıp Lütfen Tekrar Giriş Yapınız!");
+        }
+        var model = await _serviceAddress.GetAsync(u => u.AddressGuid.ToString() == id && u.AppUserId == appUser.Id);
+        if (model == null)
+        {
+            return NotFound("Adres bilgisi  Bulunamadı!");
+        }
+        return View(model);
+   
+    }
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(string id, Address address)
+    {
+        var appUser =
+            await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        if (appUser == null)
+        {
+            return NotFound("Kullanıcı Datası Bulunamadı! Oturumunuzu Kapatıp Lütfen Tekrar Giriş Yapınız!");
+        }
+        var model = await _serviceAddress.GetAsync(u => u.AddressGuid.ToString() == id && u.AppUserId == appUser.Id);
+        if (model == null)
+        {
+            return NotFound("Adres bilgisi  Bulunamadı!");
+        }
+
+        try
+        {
+            _serviceAddress.Delete(model);
+            await _serviceAddress.SaveChangesAsync();
+            return RedirectToAction("Index");
+        }
+        catch (Exception e)
+        {
+           ModelState.AddModelError("", "Hata Oluştu");
         }
         return View(model);
    

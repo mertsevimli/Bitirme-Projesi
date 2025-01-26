@@ -83,6 +83,31 @@ public class CartController : Controller
             
         return View(model);
     }
+    [Authorize, HttpPost]
+    public async Task<IActionResult> Checkout(string CardNumber, string CardMonth, string CardYear, string CVV, string Addresses, string BillingAddress)
+    {
+        var cart = GetCart();
+        var appUser = await _serviceAppUser.GetAsync(x=>x.UserGuid.ToString()== HttpContext.User.FindFirst("UserGuid").Value);
+        if (appUser == null)
+        {
+            return RedirectToAction("SignIn", "Account");
+        }
+        var addresses = await _serviceAddress.GetAllAsync(a=>a.AppUserId == appUser.Id && a.IsActive);
+        var model = new CheckoutViewModel()
+        {
+            CartProducts = cart.CartLines,
+            TotalPrice = cart.TotalPrice(),
+            Addresses = addresses
+        };
+        if (string.IsNullOrWhiteSpace(CardNumber) ||string.IsNullOrWhiteSpace(CardMonth)|| string.IsNullOrWhiteSpace(CardYear)|| string.IsNullOrWhiteSpace(CVV)|| string.IsNullOrWhiteSpace(Addresses)|| string.IsNullOrWhiteSpace(BillingAddress))
+        {
+            return View(model);
+        }
+
+        var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == Addresses); 
+        var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == BillingAddress);  
+        return View(model);
+    }
     public IActionResult Remove(int ProductId)
     {
         var product = _serviceProduct.Find(ProductId);
