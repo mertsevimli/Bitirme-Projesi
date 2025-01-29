@@ -15,7 +15,8 @@ public class CartController : Controller
     private readonly IService<AppUser> _serviceAppUser;
     private readonly IService<Order> _serviceOrder;
 
-    public CartController (IService<Product> serviceProduct, IService<Address> serviceAddress, IService<AppUser> serviceAppUser, IService<Order> serviceOrder)
+    public CartController(IService<Product> serviceProduct, IService<Address> serviceAddress,
+        IService<AppUser> serviceAppUser, IService<Order> serviceOrder)
     {
         _serviceProduct = serviceProduct;
         _serviceAddress = serviceAddress;
@@ -23,7 +24,6 @@ public class CartController : Controller
         _serviceOrder = serviceOrder;
     }
 
-    // GET
     public IActionResult Index()
     {
         var cart = GetCart();
@@ -32,7 +32,7 @@ public class CartController : Controller
             CartLines = cart.CartLines,
             TotalPrice = cart.TotalPrice()
         };
-            
+
         return View(model);
     }
 
@@ -54,6 +54,7 @@ public class CartController : Controller
 
         return RedirectToAction("Index");
     }
+
     public IActionResult Update(int productId, int quantity = 1)
     {
         var product = _serviceProduct.Find(productId);
@@ -66,50 +67,69 @@ public class CartController : Controller
 
         return RedirectToAction("Index");
     }
+
     [Authorize]
     public async Task<IActionResult> Checkout()
     {
         var cart = GetCart();
-        var appUser = await _serviceAppUser.GetAsync(x=>x.UserGuid.ToString()== HttpContext.User.FindFirst("UserGuid").Value);
+        var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (appUser == null)
         {
             return RedirectToAction("SignIn", "Account");
         }
-        var addresses = await _serviceAddress.GetAllAsync(a=>a.AppUserId == appUser.Id && a.IsActive);
+
+        var addresses = await _serviceAddress.GetAllAsync(a => a.AppUserId == appUser.Id && a.IsActive);
+        Console.WriteLine($"Adres sayısı: {addresses.Count()}");
+        
         var model = new CheckoutViewModel()
         {
             CartProducts = cart.CartLines,
             TotalPrice = cart.TotalPrice(),
             Addresses = addresses
         };
-            
+
         return View(model);
     }
+
     [Authorize, HttpPost]
-    public async Task<IActionResult> Checkout(string CardNumber, string CardMonth, string CardYear, string CVV, string DeliveryAddress, string BillingAddress)
+    public async Task<IActionResult> Checkout(string CardNumber, string CardMonth, string CardYear, string CVV,
+        string DeliveryAddress, string BillingAddress)
     {
         var cart = GetCart();
-        var appUser = await _serviceAppUser.GetAsync(x=>x.UserGuid.ToString()== HttpContext.User.FindFirst("UserGuid").Value);
+        var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (appUser == null)
         {
             return RedirectToAction("SignIn", "Account");
         }
-        var addresses = await _serviceAddress.GetAllAsync(a=>a.AppUserId == appUser.Id && a.IsActive);
+
+        var addresses = await _serviceAddress.GetAllAsync(a => a.AppUserId == appUser.Id && a.IsActive);
         var model = new CheckoutViewModel()
         {
             CartProducts = cart.CartLines,
             TotalPrice = cart.TotalPrice(),
             Addresses = addresses
         };
-        if (string.IsNullOrWhiteSpace(CardNumber) ||string.IsNullOrWhiteSpace(CardMonth)|| string.IsNullOrWhiteSpace(CardYear)|| string.IsNullOrWhiteSpace(CVV)|| string.IsNullOrWhiteSpace(DeliveryAddress)|| string.IsNullOrWhiteSpace(BillingAddress))
+
+        // Kart bilgisi doğrulaması
+        if (string.IsNullOrWhiteSpace(CardNumber) || string.IsNullOrWhiteSpace(CardMonth) ||
+            string.IsNullOrWhiteSpace(CardYear) || string.IsNullOrWhiteSpace(CVV) ||
+            string.IsNullOrWhiteSpace(DeliveryAddress) || string.IsNullOrWhiteSpace(BillingAddress))
         {
+            TempData["Message"] = "Tüm alanları doldurduğunuzdan emin olun!";
             return View(model);
         }
 
-        var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == DeliveryAddress); 
-        var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid.ToString() == BillingAddress); 
-        // Ödeme Çekme
+        // Adres doğrulaması
+        var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid == Guid.Parse(DeliveryAddress));
+        var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid == Guid.Parse(BillingAddress));
 
+        if (teslimatAdresi == null || faturaAdresi == null)
+        {
+            TempData["Message"] = "Geçersiz adres bilgisi!";
+            return View(model);
+        }
+
+        // Sipariş oluşturma
         var siparis = new Order
         {
             AppUserId = appUser.Id,
@@ -119,25 +139,25 @@ public class CartController : Controller
             OrderDate = DateTime.Now,
             TotalPrice = cart.TotalPrice(),
             OrderNumber = Guid.NewGuid().ToString(),
-            OrderLines = []
-            
+            OrderLines = new List<OrderLine>()
         };
-        foreach (var item  in cart.CartLines)
+
+        foreach (var item in cart.CartLines)
         {
             siparis.OrderLines.Add(new OrderLine
             {
-               ProductId = item.Product.Id,
-               OrderId = siparis.Id,
-               Quantity = item.Quantity,
-               UnitPrice = item.Product.Price,
+                ProductId = item.Product.Id,
+                Quantity = item.Quantity,
+                UnitPrice = item.Product.Price,
             });
         }
 
+        // Sipariş kaydetme
         try
         {
             await _serviceOrder.AddAsync(siparis);
             var sonuc = await _serviceOrder.SaveChangesAsync();
-            if (sonuc >0)
+            if (sonuc > 0)
             {
                 HttpContext.Session.Remove("Cart");
                 return RedirectToAction("Thanks");
@@ -145,10 +165,13 @@ public class CartController : Controller
         }
         catch (Exception e)
         {
-            TempData["Message"] = "Hata Oluştu!";
+            TempData["Message"] = "Bir hata oluştu, lütfen tekrar deneyin.";
+            Console.WriteLine(e.Message);
         }
+
         return View(model);
     }
+
     public IActionResult Remove(int ProductId)
     {
         var product = _serviceProduct.Find(ProductId);
@@ -161,10 +184,9 @@ public class CartController : Controller
 
         return RedirectToAction("Index");
     }
+
     public IActionResult Thanks()
     {
-       
-            
         return View();
     }
 }

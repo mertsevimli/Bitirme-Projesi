@@ -12,15 +12,16 @@
         <div class="row">
             <div class="col-md-8">
                 <div class="table-responsive">
-
-                    <table class="table  table-hover">
-                        <tr>
-                            <th></th>
-                            <th>Ürün</th>
-                            <th>Fiyat</th>
-                            <th>Miktar</th>
-                            <th>Toplam</th>
-                        </tr>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Ürün</th>
+                                <th>Fiyat</th>
+                                <th>Miktar</th>
+                                <th>Toplam</th>
+                            </tr>
+                        </thead>
                         <tbody>
                         @foreach (var item in Model.CartProducts)
                         {
@@ -34,46 +35,36 @@
                                     </a>
                                 </td>
                                 <td>@item.Product.Price.ToString("c")</td>
-                                <td>
-                                    @item.Quantity
-                                </td>
-                                <td>
-                                    @((item.Quantity * item.Product.Price).ToString("c"))
-                                </td>
-
+                                <td>@item.Quantity</td>
+                                <td>@((item.Quantity * item.Product.Price).ToString("c"))</td>
                             </tr>
                         }
                         </tbody>
                     </table>
-
                 </div>
             </div>
             <div class="col-md-4 mt-3">
-                <div>
-                    <h4>Sipariş Özeti</h4>
-                </div>
+                <h4>Sipariş Özeti</h4>
                 <table class="table">
                     <tr>
                         <td>Ürün Toplamı</td>
-                        <td>
-                            @Model.TotalPrice.ToString("c")
-                        </td>
+                        <td>@Model.TotalPrice.ToString("c")</td>
                     </tr>
                     <tr>
                         <td>Kargo Ücreti</td>
-                        <td>@(Model.TotalPrice > 999 ? "Ücretsiz" : Model.CartProducts.Any() ? "99₺" : "0₺")</td>
+                        <td>@(Model.TotalPrice > 999 ? "Ücretsiz" : "99₺")</td>
                     </tr>
                     <tr>
                         <th>Sipariş Toplamı</th>
                         <td>
-                            @(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartProducts.Any() ? Model.TotalPrice + 99 : Model.TotalPrice.ToString("c")))
+                            @(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartProducts.Any() ? (Model.TotalPrice + 99).ToString("c") : Model.TotalPrice.ToString("c")))
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
         <hr/>
-        if (Model.Addresses is null)
+        @if (Model.Addresses == null || !Model.Addresses.Any())
         {
             <div class="alert alert-secondary my-5">
                 <h5 class="text-danger">
@@ -89,31 +80,31 @@
         }
         else
         {
-            <form asp-action="Checkout" >
+            <form asp-action="Checkout">
                 <div class="my-5">
-                    <h3>
-                        <i class="fa-solid fa-truck me-2"></i> Teslimat Adresi
-                    </h3>
+                    <h3><i class="fa-solid fa-truck me-2"></i> Teslimat Adresi</h3>
                     <div class="row row-cols-3">
                         @foreach (var item in Model.Addresses)
-                        { 
+                        {
                             <div class="col">
                                 <div class="card">
                                     <div class="card-header">
                                         <div class="form-check">
                                             <label class="form-check-label">
-                                                <input class="form-check-input" type="radio" name="DeliveryAddress" value="@item.AddressGuid" @(item.IsDeliveryAddress ? "checked" : "")>
+                                                <input class="form-check-input" type="radio" name="DeliveryAddress"
+                                                       value="@item.AddressGuid"
+                                                       @(item.IsDeliveryAddress ? "checked" : "")>
                                                 @item.Title
                                             </label>
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <p>
-                                            @item.OpenAddress @item.District @item.City 
-                                        </p>
+                                        <p>@item.OpenAddress @item.District @item.City</p>
                                         <div class="form-check">
                                             <label class="form-check-label">
-                                                <input class="form-check-input" type="radio" name="Billing Address" value="@item.AddressGuid" @(item.IsBillingAddress ? "checked" : "")>
+                                                <input class="form-check-input" type="radio" name="BillingAddress"
+                                                       value="@item.AddressGuid"
+                                                       @(item.IsBillingAddress ? "checked" : "")>
                                                 Fatura Adresi
                                             </label>
                                         </div>
@@ -122,7 +113,8 @@
                             </div>
                         }
                     </div>
-                </div> 
+                </div>
+
                 <div class="my-5">
                     <h2>Ödeme Seçenekleri</h2>
                     <h3>Kart ile Öde</h3>
@@ -139,58 +131,29 @@
                         <div class="col-md-2">
                             <select class="form-select" name="CardMonth" required>
                                 <option disabled="" value="">Ay</option>
-                                <option value="1">01</option>
-                                <option  value="2">02</option>
-                                <option  value="3">03</option>
-                                <option  value="4">04</option>
-                                <option  value="5">05</option>
-                                <option  value="6">06</option>
-                                <option  value="7">07</option>
-                                <option  value="8">08</option>
-                                <option  value="9">09</option>
-                                <option  value="10">10</option>
-                                <option  value="11">11</option>
-                                <option value="12">12</option>
-                                
+                                @for (int month = 1; month <= 12; month++)
+                                {
+                                    <option value="@month">@month.ToString("D2")</option>
+                                }
                             </select>
                         </div>
                         <div class="col-md-2">
                             <select class="form-select" name="CardYear" required>
                                 <option disabled="" value="">Yıl</option>
-                                <option value="2024">2024</option>
-                                <option  value="2025">2025</option>
-                                <option  value="2026">2026</option>
-                                <option  value="2027">2027</option>
-                                <option  value="2028">2028</option>
-                                <option  value="2029">2029</option>
-                                <option  value="2030">2030</option>
-                                <option  value="2031">2031</option>
-                                <option  value="2032">2032 </option>
-                                <option  value="2033">2033</option>
-                                <option  value="2034">2034</option>
-                                <option value="2035">2035</option>
-                                <option value="2036">2036</option>
-                                <option value="2037">2037</option>
-                                <option value="2038">2038</option>
-                                <option value="2039">2039</option>
-                                <option value="2040">2040</option>
-                                <option value="2041">2041</option>
-                                <option value="2042">2042</option>
-                                <option value="2043">2043</option>
-                                <option value="2044">2044</option>
-                                <option value="2045">2045</option>
-                                
-                                
+                                @for (int year = DateTime.Now.Year; year <= DateTime.Now.Year + 10; year++)
+                                {
+                                    <option value="@year">@year</option>
+                                }
                             </select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-2">
-                            <label CVV></label>
+                            <label>CVV</label>
                             <input type="number" name="CVV" class="form-control" required>
-                        </div> 
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-success mt-2" >Ödeme Yap</button>
+                    <button type="submit" class="btn btn-success mt-2">Ödeme Yap</button>
                 </div>
             </form>
         }
@@ -203,5 +166,4 @@
             </div>
         </div>
     }
-
 </section>
