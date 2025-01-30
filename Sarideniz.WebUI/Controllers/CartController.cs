@@ -72,7 +72,8 @@ public class CartController : Controller
     public async Task<IActionResult> Checkout()
     {
         var cart = GetCart();
-        var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        var appUser =
+            await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (appUser == null)
         {
             return RedirectToAction("SignIn", "Account");
@@ -80,7 +81,7 @@ public class CartController : Controller
 
         var addresses = await _serviceAddress.GetAllAsync(a => a.AppUserId == appUser.Id && a.IsActive);
         Console.WriteLine($"Adres sayısı: {addresses.Count()}");
-        
+
         var model = new CheckoutViewModel()
         {
             CartProducts = cart.CartLines,
@@ -96,7 +97,8 @@ public class CartController : Controller
         string DeliveryAddress, string BillingAddress)
     {
         var cart = GetCart();
-        var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        var appUser =
+            await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (appUser == null)
         {
             return RedirectToAction("SignIn", "Account");
@@ -120,8 +122,9 @@ public class CartController : Controller
         }
 
         // Adres doğrulaması
-        var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid == Guid.Parse(DeliveryAddress));
         var faturaAdresi = addresses.FirstOrDefault(a => a.AddressGuid == Guid.Parse(BillingAddress));
+        var teslimatAdresi = addresses.FirstOrDefault(a => a.AddressGuid == Guid.Parse(DeliveryAddress));
+
 
         if (teslimatAdresi == null || faturaAdresi == null)
         {
@@ -133,12 +136,13 @@ public class CartController : Controller
         var siparis = new Order
         {
             AppUserId = appUser.Id,
-            BillingAddress = BillingAddress,
+            BillingAddress = $"{faturaAdresi.OpenAddress}{faturaAdresi.District}{faturaAdresi.City}", // BillingAddress,
+            DeliveryAddress = $"{faturaAdresi.OpenAddress}{faturaAdresi.District}{faturaAdresi.City}", //DeliveryAddress
             CustomerId = appUser.UserGuid.ToString(),
-            DeliveryAddress = DeliveryAddress,
             OrderDate = DateTime.Now,
             TotalPrice = cart.TotalPrice(),
             OrderNumber = Guid.NewGuid().ToString(),
+            OrderState = 0,
             OrderLines = new List<OrderLine>()
         };
 
