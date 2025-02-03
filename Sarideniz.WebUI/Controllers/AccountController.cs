@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Sarideniz.Core.Entities;
 using Sarideniz.Service.Abstract;
 using Sarideniz.WebUI.Models;
+using Sarideniz.WebUI.Utils;
 
 namespace Sarideniz.WebUI.Controllers;
 
@@ -23,7 +24,7 @@ public class AccountController : Controller
     [Authorize]
     public async Task<IActionResult> Index()
     {
-        var user = await _service.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+        AppUser user = await _service.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
         if (user == null)
         {
             return NotFound();
@@ -175,6 +176,25 @@ public class AccountController : Controller
     public IActionResult PasswordRenew()
     {
         
+        return View();
+    }
+    [HttpPost]
+    public async Task<IActionResult> PasswordRenew(string Email)
+    {
+        if (string.IsNullOrWhiteSpace(Email))
+        {
+            ModelState.AddModelError("","Email Boş Geçilemez!");
+            return View();
+        }
+        AppUser user = await _service.GetAsync(x => x.Email == Email);
+        if (user == null)
+        {
+            ModelState.AddModelError("","Giriş yaptığınız Email adresi bulunamadı!");
+            return View();
+        }
+
+        string mesaj = $"Şifrenizi Yenilemek için Lütfen <a href='http://localhost:5257/Account/PasswordRenew?user={user.UserGuid.ToString()}'>Buraya Tıklayınız</a> ";
+        await MailHelper.SendEmailAsync(Email,"Şifremi Yenile",mesaj);
         return View();
     }
 }
