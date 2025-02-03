@@ -178,6 +178,7 @@ public class AccountController : Controller
         
         return View();
     }
+   
     [HttpPost]
     public async Task<IActionResult> PasswordRenew(string Email)
     {
@@ -193,8 +194,66 @@ public class AccountController : Controller
             return View();
         }
 
-        string mesaj = $"Şifrenizi Yenilemek için Lütfen <a href='http://localhost:5257/Account/PasswordRenew?user={user.UserGuid.ToString()}'>Buraya Tıklayınız</a> ";
-        await MailHelper.SendEmailAsync(Email,"Şifremi Yenile",mesaj);
+        string mesaj = $"Sayın {user.Name}{user.Surname} <hr> Şifrenizi Yenilemek için Lütfen <a href='http://localhost:5257/Account/PasswordChange?user={user.UserGuid.ToString()}'>Buraya Tıklayınız</a> ";
+        var sonuc = await MailHelper.SendEmailAsync(Email,"Şifremi Yenile",mesaj);
+        if (sonuc)
+        {
+            TempData["Message"] = @"<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+  <strong>Şifre Sıfırlama Bağlantınız Mail Adresinize Gönderilmiştir..</strong>
+  <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+</div>";
+        }
+        else
+        {
+            TempData["Message"] = @"<div class=""alert alert-danger alert-dismissible fade show"" role=""alert"">
+  <strong>Şifre Sıfırlama Bağlantınız Mail Adresinize Gönderilmedi!.</strong>
+  <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+</div>";
+        }
+        //
+        return View();
+    }
+    public async Task<IActionResult> PasswordChange(string user)
+    {
+        if (user is null)
+        {
+            return BadRequest("Geçersiz İstek!");
+        }
+        AppUser appUser = await _service.GetAsync(x => x.UserGuid.ToString() == user);
+        if (appUser == null)
+        {
+            ModelState.AddModelError("","Geçersiz Değer");
+            return NotFound("Geçersiz Değer!");
+        }
+        return View();
+    }
+    [HttpPost]
+    public async Task<IActionResult> PasswordChange(string user, string Password)
+    {
+        if (user is null)
+        {
+            return BadRequest("Geçersiz İstek!");
+        }
+        AppUser appUser = await _service.GetAsync(x => x.UserGuid.ToString() == user);
+        if (appUser == null)
+        {
+            ModelState.AddModelError("","Geçersiz Değer");
+            return View();
+        }
+
+        appUser.Password = Password;
+         var sonuc = await _service.SaveChangesAsync();
+         if (sonuc > 0)
+         {
+             TempData["Message"] = @"<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+  <strong>Şifreniz Güncellenmiştir! Giriş Ekranından Oturum Açabilirsiniz.</strong>
+  <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+</div>";
+         }
+         else
+         {
+             ModelState.AddModelError("","Güncelleme Başarısız!");
+         }
         return View();
     }
 }
