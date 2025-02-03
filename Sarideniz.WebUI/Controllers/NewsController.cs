@@ -20,14 +20,14 @@ public class NewsController : Controller
     {
         if (id == null)
         {
-            return NotFound();
+            return NotFound("Geçersiz İstek");
         }
 
         var news = await _service
-            .GetAsync(m => m.Id == id);
+            .GetAsync(m => m.Id == id && m.IsActive);
         if (news == null)
         {
-            return NotFound();
+            return NotFound("Gerçerli Bir Kampanya Bulunamadı!");
         }
 
         return View(news);

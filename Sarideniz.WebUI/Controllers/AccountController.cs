@@ -172,4 +172,9 @@ public class AccountController : Controller
         await HttpContext.SignOutAsync();
         return RedirectToAction("SignIn");
     }
+    public IActionResult PasswordRenew()
+    {
+        
+        return View();
+    }
 }
