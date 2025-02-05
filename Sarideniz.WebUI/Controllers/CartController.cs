@@ -18,14 +18,16 @@ public class CartController : Controller
     private readonly IService<Core.Entities.Address> _serviceAddress;
     private readonly IService<AppUser> _serviceAppUser;
     private readonly IService<Order> _serviceOrder;
+    private readonly IConfiguration _configuration;
 
     public CartController(IService<Product> serviceProduct, IService<Core.Entities.Address> serviceAddress,
-        IService<AppUser> serviceAppUser, IService<Order> serviceOrder)
+        IService<AppUser> serviceAppUser, IService<Order> serviceOrder, IConfiguration configuration)
     {
         _serviceProduct = serviceProduct;
         _serviceAddress = serviceAddress;
         _serviceAppUser = serviceAppUser;
         _serviceOrder = serviceOrder;
+        _configuration = configuration;
     }
 
     public IActionResult Index()
@@ -163,9 +165,9 @@ public class CartController : Controller
         #region OdemeIslemi
 
         Options options = new Options();
-        options.ApiKey = "your api key";
-        options.SecretKey = "your secret key";
-        options.BaseUrl = "https://sandbox-api.iyzipay.com";
+        options.ApiKey = _configuration["IyzicOptions:ApiKey"];
+        options.SecretKey = _configuration["IyzicOptions:SecretKey"];
+        options.BaseUrl = _configuration["IyzicOptions:BaseUrl"]; //"https://sandbox-api.iyzipay.com";
 
         CreatePaymentRequest request = new CreatePaymentRequest();
         request.Locale = Locale.TR.ToString();
@@ -249,19 +251,28 @@ public class CartController : Controller
         request.BasketItems = basketItems;
 
         Payment payment = await Payment.Create(request, options);
+        
 
         #endregion
 
         // Sipariş kaydetme
         try
         {
-            await _serviceOrder.AddAsync(siparis);
-            var sonuc = await _serviceOrder.SaveChangesAsync();
-            if (sonuc > 0)
+            if (payment.Status == "success")
             {
-                HttpContext.Session.Remove("Cart");
-                return RedirectToAction("Thanks");
+                await _serviceOrder.AddAsync(siparis);
+                var sonuc = await _serviceOrder.SaveChangesAsync();
+                if (sonuc > 0)
+                {
+                    HttpContext.Session.Remove("Cart");
+                    return RedirectToAction("Thanks");
+                }else
+                {
+                    TempData["Message"] = "Ödeme işlemi başarısız!";
+                }
+                // Sipariş Oluştur
             }
+          
         }
         catch (Exception e)
         {
