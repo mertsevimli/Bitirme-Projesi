@@ -66,13 +66,25 @@
                         <a class="nav-link text-dark mt-3" asp-controller="Home" asp-action="ContactUs">İletişim</a>
                     </li>
                 </ul>
-                <form action="/Products" class="ms-5 mt-3 w-40 me-3" role="search">
+                <form action="/Products" class="ms-1 mt-3 w-30 me-2" role="search">
                     <input name="arama" type="search" class="form-control" placeholder="Ürün Ara..."
                            aria-label="Search">
                 </form>
-                <div class="col-md-1 mt-3 me-0 text-start">
+                <div class="ms-2 mt-3 me-3 text-start">
                     <a class=" nav-link text-dark" href="/Favorites">
-                        <i class="bi bi-star-fill" style="color: gold;"></i> Favorilerim 
+                        @{
+                            var favorites = Context.Session.GetJson<List<Product>>("GetFavorites");
+                            if(favorites is not null && favorites.Count > 0)
+                            {
+                                <i class="bi bi-star-fill" style="color: gold;"></i> @:Favorilerim (@favorites.Count)
+                            }
+                            else
+                            {
+                                <i class="bi bi-star-fill" style="color: gold;"></i> @:Favorilerim
+                            }
+                           
+                        }
+                      
                     </a>
 
                 </div>
@@ -142,7 +154,7 @@
                         <div class="dropdown">
                             <button class="dropdown-toggle nav-link text-dark " type="button" data-bs-toggle="dropdown"
                                     aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> Hesabım
+                                <i class="bi bi-person-circle"></i> Hoşgeldin @Context.User.Identity?.Name
                             </button>
 
                             <ul class="dropdown-menu">

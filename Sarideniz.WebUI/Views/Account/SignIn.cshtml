@@ -1,6 +1,7 @@
 ﻿@model LoginViewModel
 @{
     ViewData["Title"] = "Giriş ";
+    Layout = "_AccountLayout";
 }
 
 <style>
@@ -30,7 +31,7 @@
         border-top-right-radius: 0;
     }
 </style>
-<main class="form-signin w-100 m-auto shadow rounded my-5">
+<main class="form-signin w-100 m-auto shadow rounded my-5 mt-5">
     <form asp-action="SignIn">
         <svg  class="ms-3 mt-2 mb-2 text-white w-30" height="20" preserveAspectRatio="none" data-bbox="0.002 0 85.168 40.58" viewBox="0.002 0 85.168 40.58" xmlns="http://www.w3.org/2000/svg" data-type="shape" role="presentation" aria-hidden="true">
             <g fill="orange">
