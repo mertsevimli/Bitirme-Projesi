@@ -7,6 +7,7 @@
     <div class="text-center">
         <h1 class="display-4"><i class="bi bi-cart4" style="color: black;"></i> Satın Al</h1>
     </div>
+
     @if (Model.CartProducts.Any())
     {
         <div class="row">
@@ -64,15 +65,13 @@
             </div>
         </div>
         <hr/>
+
+        <!-- Teslimat ve Fatura Adresi -->
         @if (Model.Addresses is null || Model.Addresses.Count == 0)
         {
             <div class="alert alert-secondary my-5">
-                <h5 class="text-danger">
-                    Kayıtlı Adresiniz Bulunmamaktadır.
-                </h5>
-                <h6>
-                    Sipariş Verebilmek için en az 1 adres eklemelisiniz!
-                </h6>
+                <h5 class="text-danger">Kayıtlı Adresiniz Bulunmamaktadır.</h5>
+                <h6>Sipariş Verebilmek için en az 1 adres eklemelisiniz!</h6>
                 <a href="/MyAddresses/Create" class="btn btn-danger">
                     <i class="fa-solid fa-map-location-dot me-2"></i>Adres Ekle
                 </a>
@@ -80,41 +79,41 @@
         }
         else
         {
-            <form asp-action="Checkout">
-                <div class="my-5">
-                    <h3><i class="fa-solid fa-truck me-2"></i> Teslimat Adresi</h3>
-                    <div class="row row-cols-3">
-                        @foreach (var item in Model.Addresses)
-                        {
-                            <div class="col">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <div class="form-check">
-                                            <label class="form-check-label">
-                                                <input class="form-check-input" type="radio" name="DeliveryAddress"
-                                                       value="@item.AddressGuid"
-                                                       @(item.IsDeliveryAddress ? "checked" : "")>
-                                                @item.Title
-                                            </label>
-                                        </div>
+            <div class="my-5">
+                <h3><i class="fa-solid fa-truck me-2"></i> Teslimat Adresi</h3>
+                <div class="row row-cols-3">
+                    @foreach (var item in Model.Addresses)
+                    {
+                        <div class="col">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="DeliveryAddress"
+                                                   value="@item.AddressGuid"
+                                                   @(item.IsDeliveryAddress ? "checked" : "")>
+                                            @item.Title
+                                        </label>
                                     </div>
-                                    <div class="card-body">
-                                        <p>@item.OpenAddress @item.District @item.City</p>
-                                        <div class="form-check">
-                                            <label class="form-check-label">
-                                                <input class="form-check-input" type="radio" name="BillingAddress"
-                                                       value="@item.AddressGuid"
-                                                       @(item.IsBillingAddress ? "checked" : "")>
-                                                Fatura Adresi
-                                            </label>
-                                        </div>
+                                </div>
+                                <div class="card-body">
+                                    <p>@item.OpenAddress @item.District @item.City</p>
+                                    <div class="form-check">
+                                        <label class="form-check-label">
+                                            <input class="form-check-input" type="radio" name="BillingAddress"
+                                                   value="@item.AddressGuid"
+                                                   @(item.IsBillingAddress ? "checked" : "")>
+                                            Fatura Adresi
+                                        </label>
                                     </div>
                                 </div>
                             </div>
-                        }
-                    </div>
+                        </div>
+                    }
                 </div>
+            </div>
 
+            <form asp-action="Checkout">
                 <div class="my-5">
                     <h2>Ödeme Seçenekleri</h2>
                     <h3>Kart ile Öde</h3>
@@ -122,8 +121,20 @@
                     <h6>Kart Bilgileri</h6>
                     <div class="row">
                         <div class="col-md-4">
+                            <label>Kart Üzerindeki İsim</label>
+                            <input type="text" name="CardNameSurname" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
                             <label>Kart Numarası</label>
-                            <input type="number" name="CardNumber" class="form-control" required>
+                            <div class="input-group">
+                                <input type="text" name="CardNumber" id="CardNumber" class="form-control" maxlength="19" required
+                                       oninput="formatCardNumber(this)">
+                                <span class="input-group-text">
+                                    <img id="cardLogo" src="" alt="Kart Türü" width="40" style="display: none;">
+                                </span>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -150,7 +161,7 @@
                     <div class="row">
                         <div class="col-md-2">
                             <label>CVV</label>
-                            <input type="number" name="CVV" class="form-control" required>
+                            <input type="text" name="CVV" id="CVV" class="form-control" maxlength="3" required>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-success mt-2">Ödeme Yap</button>
@@ -160,10 +171,30 @@
     }
     else
     {
-        <div class="container-fluid ">
-            <div class="alert alert-warning text-center ms-5">
-                <h3>Sepetinizde Ürün Bulunmamaktadır.</h3>
-            </div>
+        <div class="alert alert-warning text-center ms-5">
+            <h3>Sepetinizde Ürün Bulunmamaktadır.</h3>
         </div>
     }
-</section>
+</section> 
+
+<script>
+    function formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, '').slice(0, 16);
+        input.value = value.replace(/(\d{4})/g, '$1 ').trim();
+        detectCardType(value);
+    }
+
+    function detectCardType(cardNumber) {
+        let cardLogo = document.getElementById("cardLogo");
+
+        if (/^4/.test(cardNumber)) {
+            cardLogo.src = "https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png";
+            cardLogo.style.display = "block";
+        } else if (/^5[1-5]/.test(cardNumber)) {
+            cardLogo.src = "https://upload.wikimedia.org/wikipedia/commons/b/b7/MasterCard_Logo.svg";
+            cardLogo.style.display = "block";
+        } else {
+            cardLogo.style.display = "none";
+        }
+    }
+</script> 
