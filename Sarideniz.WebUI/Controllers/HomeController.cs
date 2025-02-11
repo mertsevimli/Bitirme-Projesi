@@ -14,11 +14,12 @@ public class HomeController : Controller
     private readonly IService<Contact> _serviceContact;
     
 
-    public HomeController(IService<Product> serviceProduct, IService<Slider>? serviceSlider,IService<News>? serviceNews,IService<Contact>? serviceContact)
+    public HomeController(IService<Product> serviceProduct, IService<Slider>? serviceSlider,IService<News>? serviceNews,IService<Contact>? serviceContact, IService<Contact> serviceContact1)
     {
         _serviceProduct = serviceProduct;
         _serviceSlider =  serviceSlider;
         _serviceNews = serviceNews;
+        _serviceContact = serviceContact;
     }
 
     public async Task<IActionResult> Index()

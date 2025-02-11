@@ -58,7 +58,7 @@
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between ms-4">
                 <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
-                        <a class="nav-link text-dark mt-3" asp-controller="Home" asp-action="Index">Anasayfa</a>
+                        <a class="nav-link text-dark mt-3" asp-controller="Home" asp-action="Index">HomePage</a>
                     </li>
                     @await Component.InvokeAsync("Categories")
 
@@ -166,8 +166,8 @@
 
                                 <li><a class="dropdown-item" href="/Account/MyOrders">Siparişlerim <i
                                             class="bi bi-cart-check-fill"></i></a></li>
-                                <li><a class="dropdown-item" href="/Account/">Değerlendirmelerim <i
-                                            class="bi bi-person-hearts"></i></a></li>
+                                @* <li><a class="dropdown-item" href="/Account/">Değerlendirmelerim <i *@
+                                @*             class="bi bi-person-hearts"></i></a></li> *@
                                 <li><a class="dropdown-item" href="/Account/SignOut">Oturumu Kapat <i
                                             class="bi bi-box-arrow-right"></i></a></li>
 
